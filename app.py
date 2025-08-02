@@ -7,6 +7,7 @@ from utils.database import db, User
 from models.document_history import DocumentHistory
 from models.session import Session as SessionModel
 from auth.entra_id import get_auth_url, get_token_from_code, get_user_info, login_required, get_mfa_auth_url
+from auth.local_auth import local_auth
 from utils.file_processor import allowed_file, process_docx, process_xlsx, process_pdf
 from utils.cleanup import start_cleanup_scheduler
 from datetime import datetime
@@ -25,6 +26,9 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Registrar blueprint de autenticação local
+app.register_blueprint(local_auth)
+
 # Criar diretório de uploads se não existir
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -38,15 +42,7 @@ def login():
     if 'user' in session:
         return redirect(url_for('dashboard'))
     
-    # Verificar se é a primeira tentativa de login
-    if 'mfa_required' not in session:
-        session['mfa_required'] = False
-    
-    # Se MFA for necessário, usar URL específica
-    if session['mfa_required']:
-        return redirect(get_mfa_auth_url())
-    
-    return redirect(get_auth_url())
+    return render_template('login_choice.html')
 
 @app.route('/auth/entra-id/callback')
 def entra_id_callback():
@@ -81,7 +77,8 @@ def entra_id_callback():
         user = User(
             entra_id=user_info['id'],
             username=user_info.get('displayName', ''),
-            email=user_info.get('mail', '')
+            email=user_info.get('mail', ''),
+            is_local=False
         )
         db.session.add(user)
         db.session.commit()
@@ -91,7 +88,8 @@ def entra_id_callback():
         'id': str(user.id),
         'username': user.username,
         'email': user.email,
-        'is_admin': user.is_admin
+        'is_admin': user.is_admin,
+        'is_local': user.is_local
     }
     
     # Resetar flag de MFA
@@ -103,6 +101,8 @@ def entra_id_callback():
 def logout():
     session.pop('user', None)
     session.pop('mfa_required', None)
+    session.pop('mfa_verify_user_id', None)
+    session.pop('mfa_setup_user_id', None)
     flash('Você foi desconectado com sucesso', 'success')
     return redirect(url_for('index'))
 
@@ -110,7 +110,7 @@ def logout():
 def index():
     if 'user' in session:
         return redirect(url_for('dashboard'))
-    return render_template('login.html')
+    return render_template('login_choice.html')
 
 @app.route('/dashboard')
 @login_required

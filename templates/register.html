@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - Data Masking App{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Criar Conta</h1>
+    <p>Preencha os campos abaixo para criar sua conta</p>
+    
+    <div class="login-card">
+        <h2>Registro</h2>
+        <form action="{{ url_for('local_auth.register') }}" method="post">
+            <div class="form-group">
+                <label for="username">Nome de Usuário:</label>
+                <input type="text" name="username" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" name="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" name="password" id="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirmar Senha:</label>
+                <input type="password" name="confirm_password" id="confirm_password" required>
+            </div>
+            <button type="submit" class="btn-primary">Criar Conta</button>
+        </form>
+        <p class="login-link">Já tem uma conta? <a href="{{ url_for('local_auth.login') }}">Faça login</a></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Configurar MFA - Data Masking App{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Configurar Autenticação de Dois Fatores</h1>
+    <p>Para sua segurança, é obrigatório configurar a autenticação de dois fatores</p>
+    
+    <div class="login-card">
+        <h2>Configurar MFA</h2>
+        <div class="mfa-setup">
+            <p>Escaneie o QR Code abaixo com seu aplicativo de autenticação:</p>
+            <div class="qr-code-container">
+                <img src="{{ qr_code }}" alt="QR Code para MFA">
+            </div>
+            <p class="mfa-instructions">
+                Use um dos seguintes aplicativos:<br>
+                <strong>Microsoft Authenticator</strong>, <strong>Google Authenticator</strong> ou <strong>Authy</strong>
+            </p>
+            <p>Se não conseguir escanear o QR Code, digite manualmente esta chave no aplicativo:</p>
+            <div class="mfa-secret">
+                <input type="text" value="{{ mfa_secret }}" readonly id="mfa-secret-input">
+                <button id="copy-secret" class="btn-secondary">Copiar</button>
+            </div>
+        </div>
+        
+        <form action="{{ url_for('local_auth.setup_mfa') }}" method="post">
+            <div class="form-group">
+                <label for="code">Código de Verificação:</label>
+                <input type="text" name="code" id="code" placeholder="Digite o código de 6 dígitos" required>
+            </div>
+            <button type="submit" class="btn-primary">Verificar e Ativar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const copyButton = document.getElementById('copy-secret');
+        const secretInput = document.getElementById('mfa-secret-input');
+        
+        copyButton.addEventListener('click', function() {
+            secretInput.select();
+            document.execCommand('copy');
+            
+            const originalText = copyButton.textContent;
+            copyButton.textContent = 'Copiado!';
+            setTimeout(() => {
+                copyButton.textContent = originalText;
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

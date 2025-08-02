@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Verificar MFA - Data Masking App{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Verificar Autenticação de Dois Fatores</h1>
+    <p>Bem-vindo de volta, {{ username }}!</p>
+    
+    <div class="login-card">
+        <h2>Verificação MFA</h2>
+        <p>Por favor, digite o código de 6 dígitos do seu aplicativo de autenticação:</p>
+        
+        <form action="{{ url_for('local_auth.verify_mfa') }}" method="post">
+            <div class="form-group">
+                <label for="code">Código de Verificação:</label>
+                <input type="text" name="code" id="code" placeholder="Digite o código de 6 dígitos" required>
+            </div>
+            <button type="submit" class="btn-primary">Verificar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

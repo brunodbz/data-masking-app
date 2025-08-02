@@ -18,6 +18,8 @@
                         <tr>
                             <th>Nome</th>
                             <th>Email</th>
+                            <th>Tipo</th>
+                            <th>MFA</th>
                             <th>Perfil</th>
                             <th>Ações</th>
                         </tr>
@@ -27,6 +29,24 @@
                             <tr>
                                 <td>{{ user.username }}</td>
                                 <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_local %}
+                                        <span class="badge-local">Local</span>
+                                    {% else %}
+                                        <span class="badge-entra">Microsoft</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_local %}
+                                        {% if user.mfa_enabled %}
+                                            <span class="badge-enabled">Habilitado</span>
+                                        {% else %}
+                                            <span class="badge-disabled">Desabilitado</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge-entra">Gerenciado pela Microsoft</span>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if user.is_admin %}
                                         <span class="badge-admin">Administrador</span>
