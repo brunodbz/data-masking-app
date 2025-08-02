@@ -14,9 +14,9 @@ class User(db.Model):
     is_local = db.Column(db.Boolean, default=False, nullable=False)
     mfa_secret = db.Column(db.String(32), nullable=True)
     mfa_enabled = db.Column(db.Boolean, default=False, nullable=False)
-    is_approved = db.Column(db.Boolean, default=False, nullable=False)  # Campo para aprovação
-    password_reset_token = db.Column(db.String(255), nullable=True)  # Token para recuperação de senha
-    password_reset_expires = db.Column(db.DateTime, nullable=True)  # Expiração do token
+    is_approved = db.Column(db.Boolean, default=False, nullable=False)
+    password_reset_token = db.Column(db.String(255), nullable=True)
+    password_reset_expires = db.Column(db.DateTime, nullable=True)
     
     def __repr__(self):
         return f'<User {self.username}>'

@@ -70,7 +70,11 @@ def register():
     
     return render_template('register.html')
 
-# O resto do arquivo permanece igual...
+@local_auth.route('/setup-mfa', methods=['GET', 'POST'])
+def setup_mfa():
+    user_id = session.get('mfa_setup_user_id')
+    if not user_id:
+        return redirect(url_for('local_auth.register'))
     
     user = User.query.get(user_id)
     if not user:

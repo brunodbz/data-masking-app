@@ -4,7 +4,7 @@ openpyxl==3.1.2
 pdfplumber==0.9.0
 reportlab==4.0.4
 Werkzeug==2.2.3
-Flask-SQLAlchemy
+Flask-SQLAlchemy==3.0.5
 psycopg2-binary==2.9.6
 msal==1.22.0
 requests==2.31.0
@@ -13,4 +13,3 @@ APScheduler==3.10.1
 pyotp==2.8.0
 qrcode==7.4.2
 Pillow==9.5.0
-

@@ -306,6 +306,46 @@ main {
     font-weight: 500;
 }
 
+.badge-local {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #28a745;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-entra {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #0078d4;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-enabled {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #28a745;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-disabled {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
 /* Rodapé */
 footer {
     background-color: #343a40;
@@ -406,6 +446,7 @@ footer {
 .info-box strong {
     color: #0c5460;
 }
+
 /* Estilos para o login local */
 .login-options {
     display: grid;
@@ -435,18 +476,18 @@ footer {
     background-color: #218838;
 }
 
-.register-link, .microsoft-login {
+.register-link, .microsoft-login, .forgot-password-link {
     margin-top: 1rem;
     font-size: 0.875rem;
     color: #6c757d;
 }
 
-.register-link a, .microsoft-login a {
+.register-link a, .microsoft-login a, .forgot-password-link a {
     color: #0078d4;
     text-decoration: none;
 }
 
-.register-link a:hover, .microsoft-login a:hover {
+.register-link a:hover, .microsoft-login a:hover, .forgot-password-link a:hover {
     text-decoration: underline;
 }
 
@@ -492,43 +533,53 @@ footer {
 .mfa-secret button {
     margin-left: 0.5rem;
 }
-/* Estilos para badges de tipo de usuário */
-.badge-local {
+
+/* Estilos para as configurações do sistema */
+.system-settings {
+    margin-top: 1.5rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.setting-info h4 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.setting-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.setting-control {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-active {
     background-color: #28a745;
     color: white;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
 }
 
-.badge-entra {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    background-color: #0078d4;
-    color: white;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.badge-enabled {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    background-color: #28a745;
-    color: white;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.badge-disabled {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
+.status-inactive {
     background-color: #dc3545;
     color: white;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 500;
 }

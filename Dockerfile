@@ -9,5 +9,4 @@ COPY . .
 
 EXPOSE 5000
 
-# Não criamos as tabelas aqui, vamos fazer isso no entrypoint
 CMD ["python", "app.py"]
