@@ -1,1 +1,3 @@
-# Arquivo vazio para tornar o diretório um pacote Python
+from .user import User
+from .session import Session
+from .document_history import DocumentHistory
