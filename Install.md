@@ -76,7 +76,7 @@
 
 ### 3.1 Clonar o Repositório
 ```bash
-git clone https://github.com/seu-usuario/data-masking-app.git
+git clone https://github.com/brunodbz/data-masking-app.git
 cd data-masking-app
 ```
 
@@ -362,5 +362,6 @@ Para uso em produção, considere as seguintes alterações:
 - Considere usar Kubernetes para orquestração
 
 ---
+
 
 Este passo a passo cobre todo o ciclo de vida da aplicação, desde a instalação até o uso e manutenção. Se você tiver alguma dúvida ou encontrar algum problema, consulte os logs ou entre em contato com o suporte.
