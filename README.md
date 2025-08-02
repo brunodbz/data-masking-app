@@ -9,7 +9,6 @@ O Data Masking App é uma solução completa para mascaramento e restauração d
 ### 🛡️ Mascaramento de Documentos
 - **Suporte a múltiplos formatos**: Word (.docx), Excel (.xlsx) e PDF
 - **Detecção automática**: Identifica e mascara automaticamente:
-  - E-mails (padrão `nome.sobrenome@`)
   - CPFs (formato XXX.XXX.XXX-XX)
   - CNPJs (formato XX.XXX.XXX/XXXX-XX)
 - **Mascaramento personalizado**: Permite adicionar palavras específicas para mascarar
