@@ -126,7 +126,7 @@ data-masking-app/
 ### Configuração da Aplicação
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/data-masking-app.git
+   git clone https://github.com/brunodbz/data-masking-app.git
    cd data-masking-app
    ```
 
