@@ -1,5 +1,6 @@
 import os
 import uuid
+import time
 from flask import Flask, request, jsonify, send_file, redirect, url_for, session, render_template, flash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -16,7 +17,13 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}:{os.environ.get('POSTGRES_PORT')}/{os.environ.get('POSTGRES_DB')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = (
+    f"postgresql://{os.environ.get('POSTGRES_USER', 'postgres')}:"
+    f"{os.environ.get('POSTGRES_PASSWORD', 'postgres')}@"
+    f"{os.environ.get('POSTGRES_HOST', 'db')}:"
+    f"{os.environ.get('POSTGRES_PORT', '5432')}/"
+    f"{os.environ.get('POSTGRES_DB', 'masking_app')}"
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializar o banco de dados
@@ -28,9 +35,32 @@ app.register_blueprint(local_auth)
 # Criar diretório de uploads se não existir
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Criar as tabelas do banco de dados
-with app.app_context():
-    db.create_all()
+# Esperar o banco de dados estar pronto
+def wait_for_db():
+    max_retries = 10
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            with app.app_context():
+                db.engine.connect()
+                print("Banco de dados está pronto!")
+                return True
+        except Exception as e:
+            print(f"Tentativa {retry_count + 1}/{max_retries}: Aguardando banco de dados... Erro: {e}")
+            retry_count += 1
+            time.sleep(5)
+    
+    print("Não foi possível conectar ao banco de dados após várias tentativas.")
+    return False
+
+# Aguardar o banco de dados estar pronto antes de criar as tabelas
+if wait_for_db():
+    with app.app_context():
+        db.create_all()
+        print("Tabelas criadas com sucesso!")
+else:
+    print("Não foi possível criar as tabelas. O banco de dados não está disponível.")
 
 # Iniciar o scheduler de limpeza
 scheduler = start_cleanup_scheduler(app.config['UPLOAD_FOLDER'])
