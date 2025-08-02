@@ -9,6 +9,37 @@
     
     <div class="admin-actions">
         <div class="action-card">
+            <h3>Configurações do Sistema</h3>
+            <p>Gerencie as configurações globais do sistema</p>
+            <div class="system-settings">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Registro de Contas Locais</h4>
+                        <p>Permitir que novos usuários criem contas locais</p>
+                    </div>
+                    <div class="setting-control">
+                        <form action="{{ url_for('toggle_registration') }}" method="post">
+                            <button type="submit" class="btn-{% if system_config.allow_local_registration %}success{% else %}danger{% endif %}">
+                                {% if system_config.allow_local_registration %}
+                                    Desativar Registro
+                                {% else %}
+                                    Ativar Registro
+                                {% endif %}
+                            </button>
+                        </form>
+                        <span class="status-badge {% if system_config.allow_local_registration %}status-active{% else %}status-inactive{% endif %}">
+                            {% if system_config.allow_local_registration %}
+                                Ativo
+                            {% else %}
+                                Inativo
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-card">
             <h3>Gerenciar Usuários</h3>
             <p>Promova ou rebaixe usuários entre perfis comum e administrador</p>
             <div class="user-management">

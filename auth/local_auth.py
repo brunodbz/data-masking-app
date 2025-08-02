@@ -4,6 +4,7 @@ from models.user import User
 from utils.auth import hash_password, verify_password
 from utils.mfa import generate_mfa_secret, get_mfa_qr_code, verify_mfa_code
 from utils.email_sender import send_password_reset_email
+from utils.system_config import is_local_registration_allowed
 import uuid
 import secrets
 from datetime import datetime, timedelta
@@ -12,6 +13,11 @@ local_auth = Blueprint('local_auth', __name__)
 
 @local_auth.route('/register', methods=['GET', 'POST'])
 def register():
+    # Verificar se o registro local está permitido
+    if not is_local_registration_allowed():
+        flash('O registro de novas contas locais está temporariamente desativado.', 'warning')
+        return redirect(url_for('local_auth.login'))
+    
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -64,11 +70,7 @@ def register():
     
     return render_template('register.html')
 
-@local_auth.route('/setup-mfa', methods=['GET', 'POST'])
-def setup_mfa():
-    user_id = session.get('mfa_setup_user_id')
-    if not user_id:
-        return redirect(url_for('local_auth.register'))
+# O resto do arquivo permanece igual...
     
     user = User.query.get(user_id)
     if not user:

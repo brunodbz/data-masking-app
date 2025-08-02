@@ -178,7 +178,28 @@ def admin_dashboard():
     # Buscar configuração de e-mail
     email_config = EmailConfig.query.first()
     
-    return render_template('admin_dashboard.html', users=users, history=history, email_config=email_config)
+    # Buscar configuração do sistema
+    from utils.system_config import get_system_config
+    system_config = get_system_config()
+    
+    return render_template('admin_dashboard.html', users=users, history=history, email_config=email_config, system_config=system_config)
+     
+    @app.route('/admin/toggle-registration', methods=['POST'])
+@login_required
+def toggle_registration():
+    # Verificar se é administrador
+    if not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    from utils.system_config import set_local_registration_allowed, is_local_registration_allowed
+    
+    # Alternar o estado atual
+    new_state = not is_local_registration_allowed()
+    set_local_registration_allowed(new_state)
+    
+    status = "ativado" if new_state else "desativado"
+    flash(f"Registro de novas contas locais foi {status}!", "success")
+    return redirect(url_for('admin_dashboard'))
 
 # Rotas da API
 @app.route('/mask', methods=['POST'])
@@ -444,7 +465,11 @@ def email_config():
         flash("Configurações de e-mail salvas com sucesso!", "success")
         return redirect(url_for('admin_dashboard'))
     
-    return render_template('admin_dashboard.html', email_config=config, users=User.query.all(), history=DocumentHistory.query.options(joinedload(DocumentHistory.user)).order_by(DocumentHistory.timestamp.desc()).all())
+    # Buscar configuração do sistema
+    from utils.system_config import get_system_config
+    system_config = get_system_config()
+    
+    return render_template('admin_dashboard.html', email_config=config, users=User.query.all(), history=DocumentHistory.query.options(joinedload(DocumentHistory.user)).order_by(DocumentHistory.timestamp.desc()).all(), system_config=system_config)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
