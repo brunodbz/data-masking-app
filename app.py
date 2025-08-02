@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify, send_file, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from utils.database import db
-from models import User, DocumentHistory, Session as SessionModel, EmailConfig
+from models import User, DocumentHistory, Session as SessionModel, EmailConfig, SystemConfig
 from auth.entra_id import get_auth_url, get_token_from_code, get_user_info, login_required, get_mfa_auth_url
 from auth.local_auth import local_auth
 from utils.file_processor import allowed_file, process_docx, process_xlsx, process_pdf
@@ -179,27 +179,9 @@ def admin_dashboard():
     email_config = EmailConfig.query.first()
     
     # Buscar configuração do sistema
-    from utils.system_config import get_system_config
-    system_config = get_system_config()
+    system_config = SystemConfig.query.first()
     
     return render_template('admin_dashboard.html', users=users, history=history, email_config=email_config, system_config=system_config)
-     
-    @app.route('/admin/toggle-registration', methods=['POST'])
-@login_required
-def toggle_registration():
-    # Verificar se é administrador
-    if not session['user']['is_admin']:
-        return jsonify({"error": "Acesso negado"}), 403
-    
-    from utils.system_config import set_local_registration_allowed, is_local_registration_allowed
-    
-    # Alternar o estado atual
-    new_state = not is_local_registration_allowed()
-    set_local_registration_allowed(new_state)
-    
-    status = "ativado" if new_state else "desativado"
-    flash(f"Registro de novas contas locais foi {status}!", "success")
-    return redirect(url_for('admin_dashboard'))
 
 # Rotas da API
 @app.route('/mask', methods=['POST'])
@@ -466,10 +448,26 @@ def email_config():
         return redirect(url_for('admin_dashboard'))
     
     # Buscar configuração do sistema
-    from utils.system_config import get_system_config
-    system_config = get_system_config()
+    system_config = SystemConfig.query.first()
     
     return render_template('admin_dashboard.html', email_config=config, users=User.query.all(), history=DocumentHistory.query.options(joinedload(DocumentHistory.user)).order_by(DocumentHistory.timestamp.desc()).all(), system_config=system_config)
+
+@app.route('/admin/toggle-registration', methods=['POST'])
+@login_required
+def toggle_registration():
+    # Verificar se é administrador
+    if not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    from utils.system_config import set_local_registration_allowed, is_local_registration_allowed
+    
+    # Alternar o estado atual
+    new_state = not is_local_registration_allowed()
+    set_local_registration_allowed(new_state)
+    
+    status = "ativado" if new_state else "desativado"
+    flash(f"Registro de novas contas locais foi {status}!", "success")
+    return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
