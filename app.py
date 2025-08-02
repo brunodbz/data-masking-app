@@ -3,7 +3,8 @@ import uuid
 from flask import Flask, request, jsonify, send_file, redirect, url_for, session, render_template, flash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
-from utils.database import db, User
+from utils.database import db
+from models.user import User
 from models.document_history import DocumentHistory
 from models.session import Session as SessionModel
 from auth.entra_id import get_auth_url, get_token_from_code, get_user_info, login_required, get_mfa_auth_url
