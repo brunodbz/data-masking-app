@@ -469,10 +469,7 @@ def toggle_registration():
     flash(f"Registro de novas contas locais foi {status}!", "success")
     return redirect(url_for('admin_dashboard'))
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    
-    @app.route('/debug-session/<session_id>')
+@app.route('/debug-session/<session_id>')
 @login_required
 def debug_session(session_id):
     # Buscar sessão no banco de dados
@@ -491,3 +488,6 @@ def debug_session(session_id):
         "original_filename": db_session.original_filename,
         "file_format": db_session.file_format
     })
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

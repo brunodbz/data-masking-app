@@ -1,12 +1,17 @@
 import os
 import re
 import uuid
+import logging
 from docx import Document
 import openpyxl
 import pdfplumber
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
+
+# Configurar logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'docx', 'xlsx', 'pdf'}
@@ -23,6 +28,7 @@ def mask_cpf_cnpj(text, session_data):
         token = f"[CPF_{uuid.uuid4().hex[:8]}]"
         session_data[token] = cpf
         text = text.replace(cpf, token)
+        logger.debug(f"CPF mascarado: {cpf} -> {token}")
     
     # Mascarar CNPJs
     cnpjs = cnpj_pattern.findall(text)
@@ -30,40 +36,60 @@ def mask_cpf_cnpj(text, session_data):
         token = f"[CNPJ_{uuid.uuid4().hex[:8]}]"
         session_data[token] = cnpj
         text = text.replace(cnpj, token)
+        logger.debug(f"CNPJ mascarado: {cnpj} -> {token}")
     
     return text
 
 def mask_text(text, mask_words, session_data):
+    logger.debug(f"Texto original: {text}")
+    
     # Primeiro, detectar e mascarar e-mails
     email_pattern = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
     emails = email_pattern.findall(text)
+    logger.debug(f"E-mails encontrados: {emails}")
+    
     for email in emails:
         token = f"[EMAIL_{uuid.uuid4().hex[:8]}]"
         session_data[token] = email
         text = text.replace(email, token)
+        logger.debug(f"E-mail mascarado: {email} -> {token}")
     
     # Depois, mascarar palavras específicas
     for word in mask_words:
         pattern = re.compile(re.escape(word), re.IGNORECASE)
         matches = pattern.findall(text)
+        logger.debug(f"Palavras '{word}' encontradas: {matches}")
+        
         for match in matches:
             token = f"[MASKED_{uuid.uuid4().hex[:8]}]"
             session_data[token] = match
             text = pattern.sub(token, text)
+            logger.debug(f"Palavra mascarada: {match} -> {token}")
     
     # Por último, detectar e mascarar CPF e CNPJ
     text = mask_cpf_cnpj(text, session_data)
     
+    logger.debug(f"Texto final mascarado: {text}")
+    logger.debug(f"Mapeamentos: {session_data}")
+    
     return text
 
 def restore_text(text, session_data):
+    logger.debug(f"Texto para restaurar: {text}")
+    logger.debug(f"Mapeamentos disponíveis: {session_data}")
+    
     # Ordenar os tokens por comprimento (do maior para o menor)
     # Isso evita problemas quando um token é substring de outro
     sorted_tokens = sorted(session_data.keys(), key=len, reverse=True)
+    logger.debug(f"Tokens ordenados: {sorted_tokens}")
     
     for token in sorted_tokens:
         original = session_data[token]
-        text = text.replace(token, original)
+        if token in text:
+            text = text.replace(token, original)
+            logger.debug(f"Token restaurado: {token} -> {original}")
+    
+    logger.debug(f"Texto final restaurado: {text}")
     
     return text
 
