@@ -28,15 +28,12 @@ app.register_blueprint(local_auth)
 # Criar diretório de uploads se não existir
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Criar as tabelas do banco de dados
+with app.app_context():
+    db.create_all()
+
 # Iniciar o scheduler de limpeza
 scheduler = start_cleanup_scheduler(app.config['UPLOAD_FOLDER'])
-
-# Comando para criar as tabelas
-@app.cli.command()
-def create_tables():
-    """Cria as tabelas do banco de dados"""
-    db.create_all()
-    print("Tabelas criadas com sucesso!")
 
 # Rotas de autenticação
 @app.route('/login')

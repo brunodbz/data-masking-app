@@ -7,9 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Criar as tabelas do banco de dados
-RUN flask create_tables
-
 EXPOSE 5000
 
+# Não criamos as tabelas aqui, vamos fazer isso no entrypoint
 CMD ["python", "app.py"]
