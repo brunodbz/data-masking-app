@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard do Administrador - Data Masking App{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Dashboard do Administrador</h1>
+    <p>Bem-vindo, {{ session.user.username }}!</p>
+    
+    <div class="admin-actions">
+        <div class="action-card">
+            <h3>Gerenciar Usuários</h3>
+            <p>Promova ou rebaixe usuários entre perfis comum e administrador</p>
+            <div class="user-management">
+                <h4>Usuários Cadastrados</h4>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Perfil</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_admin %}
+                                        <span class="badge-admin">Administrador</span>
+                                    {% else %}
+                                        <span class="badge-user">Usuário</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_admin %}
+                                        <form action="{{ url_for('demote_user', user_id=user.id) }}" method="post">
+                                            <button type="submit" class="btn-danger">Rebaixar</button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{{ url_for('promote_user', user_id=user.id) }}" method="post">
+                                            <button type="submit" class="btn-success">Promover</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="history-section">
+        <h2>Histórico de Documentos</h2>
+        <p>Aqui você pode visualizar todos os documentos processados pelos usuários, sem acesso aos arquivos.</p>
+        
+        {% if history %}
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Nome do Arquivo</th>
+                        <th>Formato</th>
+                        <th>Operação</th>
+                        <th>ID da Sessão</th>
+                        <th>Data/Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history %}
+                        <tr>
+                            <td>{{ record.user.username }}</td>
+                            <td>{{ record.filename }}</td>
+                            <td>{{ record.file_format }}</td>
+                            <td>{{ record.operation }}</td>
+                            <td>
+                                {% if record.session_id %}
+                                    <div class="session-id-cell">
+                                        <span class="session-id-text">{{ record.session_id }}</span>
+                                    </div>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ record.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nenhum documento foi processado ainda.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

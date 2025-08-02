@@ -1,0 +1,408 @@
+/* Estilos gerais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* Navegação */
+nav {
+    background-color: #0078d4;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.nav-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* Conteúdo principal */
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Mensagens flash */
+.flash-messages {
+    margin-bottom: 1.5rem;
+}
+
+.flash-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Login */
+.login-container {
+    text-align: center;
+    max-width: 600px;
+    margin: 3rem auto;
+}
+
+.login-container h1 {
+    margin-bottom: 1rem;
+    color: #0078d4;
+}
+
+.login-container p {
+    margin-bottom: 2rem;
+    color: #6c757d;
+}
+
+.login-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.login-card h2 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.btn-microsoft {
+    display: inline-flex;
+    align-items: center;
+    background-color: #0078d4;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.btn-microsoft img {
+    height: 24px;
+    margin-right: 0.5rem;
+}
+
+.btn-microsoft:hover {
+    background-color: #005a9e;
+}
+
+/* Dashboard */
+.dashboard-container h1 {
+    margin-bottom: 1rem;
+    color: #0078d4;
+}
+
+.dashboard-container p {
+    margin-bottom: 2rem;
+    color: #6c757d;
+}
+
+.dashboard-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+}
+
+.action-card h3 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.action-card p {
+    margin-bottom: 1.5rem;
+    color: #6c757d;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #005a9e;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Histórico */
+.history-section {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+}
+
+.history-section h2 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.history-table th,
+.history-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.history-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.history-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Gerenciamento de usuários */
+.user-management {
+    margin-top: 1.5rem;
+}
+
+.user-management h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.user-table th,
+.user-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.user-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.user-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge-admin {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #0078d4;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge-user {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Rodapé */
+footer {
+    background-color: #343a40;
+    color: white;
+    text-align: center;
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+}
+
+/* Estilos para o ID da sessão */
+.session-info {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    border-left: 4px solid #0078d4;
+}
+
+.session-info h4 {
+    margin-bottom: 0.5rem;
+    color: #0078d4;
+}
+
+.session-id-container {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.session-id-container input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem 0 0 0.25rem;
+    font-family: monospace;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0 0.25rem 0.25rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.session-note {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Estilos para a tabela de histórico */
+.session-id-cell {
+    display: flex;
+    align-items: center;
+}
+
+.session-id-text {
+    font-family: monospace;
+    margin-right: 0.5rem;
+    word-break: break-all;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.copy-session-id-btn {
+    background: none;
+    border: none;
+    color: #0078d4;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s;
+}
+
+.copy-session-id-btn:hover {
+    background-color: rgba(0, 120, 212, 0.1);
+}
+
+/* Estilos para mensagens informativas */
+.info-box {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    color: #0c5460;
+}
+
+.info-box strong {
+    color: #0c5460;
+}

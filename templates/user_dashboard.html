@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard do Usuário - Data Masking App{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Dashboard do Usuário</h1>
+    <p>Bem-vindo, {{ session.user.username }}!</p>
+    
+    <div class="dashboard-actions">
+        <div class="action-card">
+            <h3>Mascarar Documento</h3>
+            <p>Envie um documento para mascarar informações sensíveis</p>
+            <p><strong>Detecção automática:</strong> E-mails, CPFs e CNPJs serão mascarados automaticamente</p>
+            <form action="{{ url_for('mask_data') }}" method="post" enctype="multipart/form-data" id="mask-form">
+                <div class="form-group">
+                    <label for="file">Selecione o arquivo:</label>
+                    <input type="file" name="file" id="file" required>
+                </div>
+                <div class="form-group">
+                    <label for="mask_words">Palavras adicionais para mascarar (separadas por vírgula):</label>
+                    <input type="text" name="mask_words" id="mask_words" placeholder="Ex: senha, rg, matrícula">
+                </div>
+                <button type="submit" class="btn-primary">Mascarar Documento</button>
+            </form>
+            
+            <div id="session-info" class="session-info" style="display: none;">
+                <h4>ID da Sessão:</h4>
+                <div class="session-id-container">
+                    <input type="text" id="session-id" readonly>
+                    <button id="copy-session-id" class="btn-secondary">Copiar</button>
+                </div>
+                <p class="session-note">Salve este ID da sessão para restaurar o documento posteriormente.</p>
+            </div>
+        </div>
+        
+        <div class="action-card">
+            <h3>Restaurar Documento</h3>
+            <p>Envie um documento mascarado para restaurar as informações originais</p>
+            <form action="{{ url_for('unmask_data') }}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file">Selecione o arquivo:</label>
+                    <input type="file" name="file" id="file" required>
+                </div>
+                <div class="form-group">
+                    <label for="session_id">ID da Sessão:</label>
+                    <input type="text" name="session_id" id="session_id" required>
+                </div>
+                <button type="submit" class="btn-primary">Restaurar Documento</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="history-section">
+        <h2>Seus Últimos Documentos</h2>
+        {% if history %}
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Nome do Arquivo</th>
+                        <th>Formato</th>
+                        <th>Operação</th>
+                        <th>ID da Sessão</th>
+                        <th>Data/Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in history %}
+                        <tr>
+                            <td>{{ record.filename }}</td>
+                            <td>{{ record.file_format }}</td>
+                            <td>{{ record.operation }}</td>
+                            <td>
+                                {% if record.session_id %}
+                                    <div class="session-id-cell">
+                                        <span class="session-id-text">{{ record.session_id }}</span>
+                                        <button class="copy-session-id-btn" data-session-id="{{ record.session_id }}" title="Copiar ID da Sessão">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ record.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Você ainda não processou nenhum documento.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Processar formulário de mascaramento
+        const maskForm = document.getElementById('mask-form');
+        const sessionInfo = document.getElementById('session-info');
+        const sessionIdInput = document.getElementById('session-id');
+        const copySessionIdBtn = document.getElementById('copy-session-id');
+        
+        maskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(maskForm);
+            
+            fetch('{{ url_for("mask_data") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // Extrair o ID da sessão do cabeçalho da resposta
+                const sessionId = response.headers.get('X-Session-ID');
+                
+                // Fazer download do arquivo
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const filename = contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : 'masked_document';
+                
+                return response.blob().then(blob => {
+                    // Criar link para download
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    // Exibir o ID da sessão
+                    if (sessionId) {
+                        sessionIdInput.value = sessionId;
+                        sessionInfo.style.display = 'block';
+                    }
+                    
+                    // Recarregar a página para atualizar o histórico
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                });
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao processar o documento.');
+            });
+        });
+        
+        // Copiar ID da sessão
+        copySessionIdBtn.addEventListener('click', function() {
+            sessionIdInput.select();
+            document.execCommand('copy');
+            
+            // Mudar texto do botão temporariamente
+            const originalText = copySessionIdBtn.textContent;
+            copySessionIdBtn.textContent = 'Copiado!';
+            setTimeout(() => {
+                copySessionIdBtn.textContent = originalText;
+            }, 2000);
+        });
+        
+        // Copiar ID da sessão da tabela
+        const copyButtons = document.querySelectorAll('.copy-session-id-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const sessionId = this.getAttribute('data-session-id');
+                
+                // Criar elemento temporário para copiar
+                const tempInput = document.createElement('input');
+                tempInput.value = sessionId;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                // Mudar ícone temporariamente
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/></svg>';
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                }, 2000);
+            });
+        });
+    });
+</script>
+{% endblock %}

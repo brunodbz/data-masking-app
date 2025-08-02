@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Data Masking App{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Bem-vindo ao Data Masking App</h1>
+    <p>Proteja seus documentos sensíveis com mascaramento inteligente</p>
+    
+    <div class="login-card">
+        <h2>Login</h2>
+        <p>Para acessar o sistema, faça login com sua conta Microsoft:</p>
+        <a href="{{ url_for('login') }}" class="btn-microsoft">
+            <img src="https://learn.microsoft.com/pt-br/azure/active-directory/develop/media/howto-add-branding-in-azure-ad-apps/ms-symbollockup_mssymbol_19.png" alt="Microsoft">
+            Login com Microsoft
+        </a>
+    </div>
+</div>
+{% endblock %}
