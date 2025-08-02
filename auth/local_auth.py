@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash
-from utils.database import db, User
+from utils.database import db
+from models.user import User
 from utils.auth import hash_password, verify_password
 from utils.mfa import generate_mfa_secret, get_mfa_qr_code, verify_mfa_code
 import uuid
@@ -80,7 +81,7 @@ def setup_mfa():
     # Gerar QR Code para o MFA
     qr_code = get_mfa_qr_code(user.mfa_secret, user.username)
     
-    return render_template('setup_mfa.html', qr_code=qr_code, username=user.username)
+    return render_template('setup_mfa.html', qr_code=qr_code, username=user.username, mfa_secret=user.mfa_secret)
 
 @local_auth.route('/login', methods=['GET', 'POST'])
 def login():
