@@ -471,3 +471,23 @@ def toggle_registration():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+    
+    @app.route('/debug-session/<session_id>')
+@login_required
+def debug_session(session_id):
+    # Buscar sessão no banco de dados
+    db_session = SessionModel.query.filter_by(session_id=session_id).first()
+    if not db_session:
+        return jsonify({"error": "Sessão não encontrada"}), 404
+    
+    # Verificar se o usuário tem permissão para acessar esta sessão
+    if str(db_session.user_id) != session['user']['id'] and not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    # Retornar informações de depuração
+    return jsonify({
+        "session_id": db_session.session_id,
+        "mappings": db_session.mappings,
+        "original_filename": db_session.original_filename,
+        "file_format": db_session.file_format
+    })

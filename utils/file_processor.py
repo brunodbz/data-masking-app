@@ -34,7 +34,15 @@ def mask_cpf_cnpj(text, session_data):
     return text
 
 def mask_text(text, mask_words, session_data):
-    # Mascarar palavras específicas
+    # Primeiro, detectar e mascarar e-mails
+    email_pattern = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
+    emails = email_pattern.findall(text)
+    for email in emails:
+        token = f"[EMAIL_{uuid.uuid4().hex[:8]}]"
+        session_data[token] = email
+        text = text.replace(email, token)
+    
+    # Depois, mascarar palavras específicas
     for word in mask_words:
         pattern = re.compile(re.escape(word), re.IGNORECASE)
         matches = pattern.findall(text)
@@ -43,22 +51,20 @@ def mask_text(text, mask_words, session_data):
             session_data[token] = match
             text = pattern.sub(token, text)
     
-    # Detectar e mascarar e-mails
-    email_pattern = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
-    emails = email_pattern.findall(text)
-    for email in emails:
-        token = f"[EMAIL_{uuid.uuid4().hex[:8]}]"
-        session_data[token] = email
-        text = text.replace(email, token)
-    
-    # Detectar e mascarar CPF e CNPJ
+    # Por último, detectar e mascarar CPF e CNPJ
     text = mask_cpf_cnpj(text, session_data)
     
     return text
 
 def restore_text(text, session_data):
-    for token, original in session_data.items():
+    # Ordenar os tokens por comprimento (do maior para o menor)
+    # Isso evita problemas quando um token é substring de outro
+    sorted_tokens = sorted(session_data.keys(), key=len, reverse=True)
+    
+    for token in sorted_tokens:
+        original = session_data[token]
         text = text.replace(token, original)
+    
     return text
 
 def process_docx(file_path, mask_words, session_data, is_masking=True):
