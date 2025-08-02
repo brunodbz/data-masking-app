@@ -1,4 +1,5 @@
 from utils.database import db
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
 class User(db.Model):
