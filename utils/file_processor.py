@@ -43,18 +43,7 @@ def mask_cpf_cnpj(text, session_data):
 def mask_text(text, mask_words, session_data):
     logger.debug(f"Texto original: {text}")
     
-    # Primeiro, detectar e mascarar e-mails
-    email_pattern = re.compile(r'[\w\.-]+@[\w\.-]+\.\w+')
-    emails = email_pattern.findall(text)
-    logger.debug(f"E-mails encontrados: {emails}")
-    
-    for email in emails:
-        token = f"[EMAIL_{uuid.uuid4().hex[:8]}]"
-        session_data[token] = email
-        text = text.replace(email, token)
-        logger.debug(f"E-mail mascarado: {email} -> {token}")
-    
-    # Depois, mascarar palavras específicas
+    # Mascarar palavras específicas
     for word in mask_words:
         pattern = re.compile(re.escape(word), re.IGNORECASE)
         matches = pattern.findall(text)
@@ -66,7 +55,7 @@ def mask_text(text, mask_words, session_data):
             text = pattern.sub(token, text)
             logger.debug(f"Palavra mascarada: {match} -> {token}")
     
-    # Por último, detectar e mascarar CPF e CNPJ
+    # Detectar e mascarar CPF e CNPJ
     text = mask_cpf_cnpj(text, session_data)
     
     logger.debug(f"Texto final mascarado: {text}")
