@@ -171,8 +171,9 @@ def admin_dashboard():
     # Buscar todos os usuários
     users = User.query.all()
     
-    # Buscar todos os documentos (apenas metadados)
-    history = DocumentHistory.query.order_by(DocumentHistory.timestamp.desc()).all()
+    # Buscar todos os documentos (apenas metadados) com os dados do usuário carregados
+    from sqlalchemy.orm import joinedload
+    history = DocumentHistory.query.options(joinedload(DocumentHistory.user)).order_by(DocumentHistory.timestamp.desc()).all()
     
     return render_template('admin_dashboard.html', users=users, history=history)
 

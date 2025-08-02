@@ -14,5 +14,8 @@ class DocumentHistory(db.Model):
     session_id = db.Column(db.String(100), nullable=True)  # Adicionado para armazenar o ID da sessão
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Adicionar a relação com o modelo User
+    user = db.relationship('User', backref=db.backref('document_history', lazy=True))
+    
     def __repr__(self):
         return f'<DocumentHistory {self.filename}>'
