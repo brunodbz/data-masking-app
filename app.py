@@ -1,6 +1,7 @@
 import os
 import uuid
 import time
+from models import User, DocumentHistory, Session as SessionModel, EmailConfig
 from flask import Flask, request, jsonify, send_file, redirect, url_for, session, render_template, flash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -345,3 +346,232 @@ def demote_user(user_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+    # Adicionar após as rotas de administração existentes
+
+@app.route('/admin/approve-user/<user_id>', methods=['POST'])
+@login_required
+def approve_user(user_id):
+    # Verificar se é administrador
+    if not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    
+    if not user.is_local:
+        return jsonify({"error": "Apenas usuários locais precisam de aprovação"}), 400
+    
+    if user.is_approved:
+        return jsonify({"error": "Usuário já está aprovado"}), 400
+    
+    user.is_approved = True
+    db.session.commit()
+    
+    flash(f"Usuário {user.username} aprovado com sucesso!", "success")
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/reject-user/<user_id>', methods=['POST'])
+@login_required
+def reject_user(user_id):
+    # Verificar se é administrador
+    if not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    
+    if not user.is_local:
+        return jsonify({"error": "Apenas usuários locais podem ser rejeitados"}), 400
+    
+    if user.is_approved:
+        return jsonify({"error": "Não é possível rejeitar um usuário já aprovado"}), 400
+    
+    # Excluir o usuário
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f"Usuário {user.username} rejeitado e excluído com sucesso!", "success")
+    return redirect(url_for('admin_dashboard'))
+    
+    @app.route('/admin/email-config', methods=['GET', 'POST'])
+@login_required
+def email_config():
+    # Verificar se é administrador
+    if not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    config = EmailConfig.query.first()
+    
+    if request.method == 'POST':
+        smtp_server = request.form.get('smtp_server')
+        smtp_port = int(request.form.get('smtp_port'))
+        smtp_username = request.form.get('smtp_username')
+        smtp_password = request.form.get('smtp_password')
+        from_email = request.form.get('from_email')
+        use_tls = 'use_tls' in request.form
+        
+        if config:
+            # Atualizar configuração existente
+            config.smtp_server = smtp_server
+            config.smtp_port = smtp_port
+            config.smtp_username = smtp_username
+            config.smtp_password = smtp_password
+            config.from_email = from_email
+            config.use_tls = use_tls
+        else:
+            # Criar nova configuração
+            config = EmailConfig(
+                smtp_server=smtp_server,
+                smtp_port=smtp_port,
+                smtp_username=smtp_username,
+                smtp_password=smtp_password,
+                from_email=from_email,
+                use_tls=use_tls
+            )
+            db.session.add(config)
+        
+        db.session.commit()
+        flash("Configurações de e-mail salvas com sucesso!", "success")
+        return redirect(url_for('admin_dashboard'))
+    
+    return render_template('admin_dashboard.html', email_config=config, users=User.query.all(), history=DocumentHistory.query.options(joinedload(DocumentHistory.user)).order_by(DocumentHistory.timestamp.desc()).all())
+    
+    @app.route('/mask', methods=['POST'])
+@login_required
+def mask_data():
+    if 'file' not in request.files:
+        return jsonify({"error": "Nenhum arquivo enviado"}), 400
+    
+    file = request.files['file']
+    mask_words = request.form.get('mask_words', '').split(',')
+    mask_words = [word.strip() for word in mask_words if word.strip()]
+    
+    if file.filename == '':
+        return jsonify({"error": "Nome de arquivo inválido"}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({"error": "Formato de arquivo não suportado"}), 400
+    
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+    
+    session_id = str(uuid.uuid4())
+    session_data = {}
+    
+    file_ext = filename.rsplit('.', 1)[1].lower()
+    
+    try:
+        if file_ext == 'docx':
+            processed_file = process_docx(file_path, mask_words, session_data, is_masking=True)
+        elif file_ext == 'xlsx':
+            processed_file = process_xlsx(file_path, mask_words, session_data, is_masking=True)
+        elif file_ext == 'pdf':
+            processed_file = process_pdf(file_path, mask_words, session_data, is_masking=True)
+        
+        # Salvar sessão no banco de dados
+        user_id = session['user']['id']
+        db_session = SessionModel(
+            session_id=session_id,
+            user_id=user_id,
+            original_filename=filename,
+            file_format=file_ext,
+            mappings=session_data
+        )
+        db.session.add(db_session)
+        
+        # Registrar no histórico
+        history_record = DocumentHistory(
+            user_id=user_id,
+            filename=filename,
+            file_format=file_ext,
+            operation='mask',
+            session_id=session_id
+        )
+        db.session.add(history_record)
+        db.session.commit()
+        
+        # Enviar e-mail com informações do documento
+        user = User.query.get(user_id)
+        send_document_email(user, filename, 'mascarado', session_id)
+        
+        # Retornar arquivo processado e o ID da sessão
+        response = send_file(
+            processed_file,
+            as_attachment=True,
+            download_name=f"masked_{filename}",
+            mimetype='application/octet-stream'
+        )
+        
+        # Adicionar cabeçalho com o ID da sessão
+        response.headers['X-Session-ID'] = session_id
+        
+        return response
+    
+    except Exception as e:
+        return jsonify({"error": f"Erro ao processar arquivo: {str(e)}"}), 500
+
+@app.route('/unmask', methods=['POST'])
+@login_required
+def unmask_data():
+    if 'file' not in request.files or 'session_id' not in request.form:
+        return jsonify({"error": "Arquivo ou ID de sessão não fornecidos"}), 400
+    
+    file = request.files['file']
+    session_id = request.form['session_id']
+    
+    # Buscar sessão no banco de dados
+    db_session = SessionModel.query.filter_by(session_id=session_id).first()
+    if not db_session:
+        return jsonify({"error": "Sessão inválida ou expirada"}), 400
+    
+    # Verificar se o usuário tem permissão para acessar esta sessão
+    if str(db_session.user_id) != session['user']['id'] and not session['user']['is_admin']:
+        return jsonify({"error": "Acesso negado"}), 403
+    
+    session_data = db_session.mappings
+    original_filename = db_session.original_filename
+    file_format = db_session.file_format
+    
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+    
+    try:
+        if file_format == 'docx':
+            restored_file = process_docx(file_path, [], session_data, is_masking=False)
+        elif file_format == 'xlsx':
+            restored_file = process_xlsx(file_path, [], session_data, is_masking=False)
+        elif file_format == 'pdf':
+            restored_file = process_pdf(file_path, [], session_data, is_masking=False)
+        
+        # Registrar no histórico
+        history_record = DocumentHistory(
+            user_id=db_session.user_id,
+            filename=original_filename,
+            file_format=file_format,
+            operation='unmask',
+            session_id=session_id
+        )
+        db.session.add(history_record)
+        
+        # Remover sessão do banco de dados
+        db.session.delete(db_session)
+        db.session.commit()
+        
+        # Enviar e-mail com informações do documento
+        user = User.query.get(db_session.user_id)
+        send_document_email(user, original_filename, 'restaurado', session_id)
+        
+        # Retornar arquivo restaurado
+        return send_file(
+            restored_file,
+            as_attachment=True,
+            download_name=f"restored_{original_filename}",
+            mimetype='application/octet-stream'
+        )
+    
+    except Exception as e:
+        return jsonify({"error": f"Erro ao restaurar arquivo: {str(e)}"}), 500

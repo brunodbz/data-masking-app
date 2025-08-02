@@ -20,6 +20,7 @@
                             <th>Email</th>
                             <th>Tipo</th>
                             <th>MFA</th>
+                            <th>Status</th>
                             <th>Perfil</th>
                             <th>Ações</th>
                         </tr>
@@ -48,6 +49,17 @@
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if user.is_local %}
+                                        {% if user.is_approved %}
+                                            <span class="badge-enabled">Aprovado</span>
+                                        {% else %}
+                                            <span class="badge-disabled">Pendente</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge-entra">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     {% if user.is_admin %}
                                         <span class="badge-admin">Administrador</span>
                                     {% else %}
@@ -55,7 +67,14 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if user.is_admin %}
+                                    {% if user.is_local and not user.is_approved %}
+                                        <form action="{{ url_for('approve_user', user_id=user.id) }}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn-success">Aprovar</button>
+                                        </form>
+                                        <form action="{{ url_for('reject_user', user_id=user.id) }}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn-danger">Rejeitar</button>
+                                        </form>
+                                    {% elif user.is_admin %}
                                         <form action="{{ url_for('demote_user', user_id=user.id) }}" method="post">
                                             <button type="submit" class="btn-danger">Rebaixar</button>
                                         </form>
@@ -70,6 +89,40 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        
+        <div class="action-card">
+            <h3>Configurações de E-mail</h3>
+            <p>Configure as informações do servidor SMTP para envio de e-mails</p>
+            <form action="{{ url_for('email_config') }}" method="post">
+                <div class="form-group">
+                    <label for="smtp_server">Servidor SMTP:</label>
+                    <input type="text" name="smtp_server" id="smtp_server" value="{{ email_config.smtp_server if email_config else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="smtp_port">Porta SMTP:</label>
+                    <input type="number" name="smtp_port" id="smtp_port" value="{{ email_config.smtp_port if email_config else 587 }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="smtp_username">Usuário SMTP:</label>
+                    <input type="text" name="smtp_username" id="smtp_username" value="{{ email_config.smtp_username if email_config else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="smtp_password">Senha SMTP:</label>
+                    <input type="password" name="smtp_password" id="smtp_password" value="{{ email_config.smtp_password if email_config else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="from_email">E-mail Remetente:</label>
+                    <input type="email" name="from_email" id="from_email" value="{{ email_config.from_email if email_config else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="use_tls" id="use_tls" {% if email_config and email_config.use_tls %}checked{% endif %}>
+                        Usar TLS
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">Salvar Configurações</button>
+            </form>
         </div>
     </div>
     
